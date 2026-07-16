@@ -9,6 +9,7 @@ on:
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY}
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
@@ -55,20 +56,18 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
-      
-      - name: Debug registry
-        run: |
-          echo "Registry: ${{ steps.login-ecr.outputs.registry }}"
-          echo "Repository: $ECR_REPOSITORY"
-          
+
       - name: Build and push application to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+           docker tag \
+             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+             $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       - name: Summary
         env:
