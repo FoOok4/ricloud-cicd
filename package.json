@@ -1,0 +1,16 @@
+{
+  "name": "ci-cd-demo",
+  "version": "1.0.0",
+  "description": "Hello World app for CI/CD demonstration",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "29.7.0"
+  }
+}
