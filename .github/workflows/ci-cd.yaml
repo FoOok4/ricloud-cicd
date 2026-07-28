@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-test:
-    name: Example 1 of artifacts Build & Test
+    name: Example 2 of artifacts Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -31,23 +31,29 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test:junit
-        continue-on-error: true
-      
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
+        run: npm run test:coverage
+
+      - name: Upload test coverage report
+        uses: actions/upload-artifact
         with:
-          name: test-results
-          path: reports/junit.xml
-          retention-days: 7
+          name: coverage-report
+          path: coverage/
+          retention-days: 5
       
-      - name: Publish test Summary
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Jest test results
-          path: reports/junit.xml
-          reporter: jest-junit
+      # - name: Upload test results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: test-results
+      #     path: reports/junit.xml
+      #     retention-days: 7
+      
+      # - name: Publish test Summary
+      #   uses: dorny/test-reporter@v1
+      #   if: always()
+      #   with:
+      #     name: Jest test results
+      #     path: reports/junit.xml
+      #     reporter: jest-junit
 
   deploy:
     name: Deploy image to ECR Public
