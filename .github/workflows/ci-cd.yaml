@@ -55,6 +55,57 @@ jobs:
       #     path: reports/junit.xml
       #     reporter: jest-junit
 
+
+  build:
+    name: Fhase A build and upload artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: "20"
+            cache: npm
+
+        - name: Install dependencies
+          run: npm ci
+
+        - name: Install dependencies
+          run: npm run build
+
+        - name: Upload build output artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: prod-build
+            path: dist/
+            retention-days: 5
+
+  use-build:
+    name: Phase B download Phase A artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifact that we exposed in Phase A
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-build
+          path: dist/
+
+      - name: List dist content
+        run: |
+          echo " Downloaded artifacts" >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          ls -la dist/  >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify bundle
+        run: |
+          echo "Bundle donwloaded successfully"
+          cat dist/build-info.json
+
   deploy:
     name: Deploy image to ECR Public
     runs-on: ubuntu-latest
