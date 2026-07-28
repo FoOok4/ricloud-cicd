@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-test:
-    name: Build & Test
+    name: Example 2 of artifacts Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +31,81 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload test coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 5
+      
+      # - name: Upload test results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: test-results
+      #     path: reports/junit.xml
+      #     retention-days: 7
+      
+      # - name: Publish test Summary
+      #   uses: dorny/test-reporter@v1
+      #   if: always()
+      #   with:
+      #     name: Jest test results
+      #     path: reports/junit.xml
+      #     reporter: jest-junit
+
+
+  build:
+    name: Fhase A build and upload artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: "20"
+            cache: npm
+
+        - name: Install dependencies
+          run: npm ci
+
+        - name: Install dependencies
+          run: npm run build
+
+        - name: Upload build output artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: prod-build
+            path: dist/
+            retention-days: 5
+
+  use-build:
+    name: Phase B download Phase A artifact
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Artifact that we exposed in Phase A
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-build
+          path: dist/
+
+      - name: List dist content
+        run: |
+          echo " Downloaded artifacts" >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          ls -la dist/  >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify bundle
+        run: |
+          echo "Bundle donwloaded successfully"
+          cat dist/build-info.json
 
   deploy:
     name: Deploy image to ECR Public
